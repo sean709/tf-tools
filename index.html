@@ -1,1 +1,255 @@
-<!-- updated -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TF — Ad Video Upload</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&family=Space+Mono:wght@400;700" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    ::root {
+      --black: #0a0a0a;
+      --orange: #E8621A;
+      --teal: #2ABFBF;
+      --cream: #F5F0E8;
+      --dark: #141414;
+      --mid: #222;
+      --border: #2a2a2a;
+      --muted: #666;
+    }
+    body {
+      background: var(--black);
+      color: var(--cream);
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .wrap { width: 100%; max-width: 520px; }
+    .header { margin-bottom: 40px; text-align: center; }
+    .brand { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--orange); margin-bottom: 8px; }
+    h1 { font-size: 26px; font-weight: 900; color: var(--cream); line-height: 1.1; }
+    h1 span { color: var(--teal); }
+    .sub { font-size: 12px; color: var(--muted); margin-top: 8px; font-family: 'Space Mono', monospace; }
+    .dropzone { border: 2px dashed var(--border); border-radius: 16px; padding: 56px 32px; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; background: var(--dark); }
+    .dropzone:hover, .dropzone.dragover { border-color: var(--orange); background: #1a1208; }
+    .drop-icon { width: 56px; height: 56px; margin: 0 auto 20px; background: var(--mid); border-radius: 14px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); }
+    .drop-icon svg { width: 28px; height: 28px; stroke: var(--orange); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+    .drop-title { font-size: 16px; font-weight: 700; color: var(--cream); margin-bottom: 6px; }
+    .drop-sub { font-size: 12px; color: var(--muted); font-family: 'Space Mono', monospace; }
+    .drop-sub strong { color: var(--orange); cursor: pointer; }
+    #file-input { display: none; }
+    .file-info { display: none; align-items: center; gap: 14px; background: var(--mid); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin-top: 16px; }
+    .file-info.show { display: flex; }
+    .file-icon { width: 40px; height: 40px; background: rgba(232,98,26,0.1); border-radius: 10px; border: 1px solid rgba(232,98,26,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .file-icon svg { width: 20px; height: 20px; fill: var(--orange); }
+    .file-details { flex: 1; min-width: 0; }
+    .file-name { font-size: 13px; font-weight: 600; color: var(--cream); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-size { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; margin-top: 2px; }
+    .file-remove { background: none; border: none; color: var(--muted); cursor: pointer; padding: 4px; border-radius: 6px; transition: color 0.15s; flex-shrink: 0; }
+    .file-remove:hover { color: #ff4444; }
+    .file-remove svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+    .btn-upload { width: 100%; margin-top: 16px; padding: 16px; background: var(--orange); color: #fff; border: none; border-radius: 12px; font-family: 'Poppins', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.15s; display: none; }
+    .btn-upload.show { display: block; }
+    .btn-upload:hover { background: #d4541a; }
+    .btn-upload:disabled { background: #444; cursor: not-allowed; }
+    .progress-wrap { display: none; margin-top: 16px; }
+    .progress-wrap.show { display: block; }
+    .progress-label { font-size: 11px; font-family: 'Space Mono', monospace; color: var(--muted); margin-bottom: 8px; display: flex; justify-content: space-between; }
+    .progress-label span { color: var(--teal); }
+    .progress-bar { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--orange), var(--teal)); border-radius: 4px; width: 0%; transition: width 0.3s ease; }
+    .result { display: none; margin-top: 24px; background: #0d1f1f; border: 1px solid rgba(42,191,191,0.3); border-radius: 14px; padding: 24px; }
+    .result.show { display: block; }
+    .result-label { font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--teal); margin-bottom: 12px; }
+    .url-box { background: var(--black); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--cream); word-break: break-all; line-height: 1.6; margin-bottom: 14px; }
+    .btn-copy { width: 100%; padding: 13px; background: rgba(42,191,191,0.1); border: 1px solid rgba(42,191,191,0.3); border-radius: 10px; color: var(--teal); font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+    .btn-copy:hover { background: rgba(42,191,191,0.2); }
+    .result-note { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; margin-top: 12px; text-align: center; }
+    .btn-reset { display: block; margin: 20px auto 0; background: none; border: none; color: var(--muted); font-size: 12px; font-family: 'Space Mono', monospace; cursor: pointer; text-decoration: underline; }
+    .error-msg { display: none; margin-top: 16px; background: rgba(255,60,60,0.08); border: 1px solid rgba(255,60,60,0.25); border-radius: 10px; padding: 14px 16px; font-size: 13px; color: #ff6b6b; font-family: 'Space Mono', monospace; }
+    .error-msg.show { display: block; }
+    .footer { margin-top: 32px; text-align: center; font-size: 11px; color: #2a2a2a; font-family: 'Space Mono', monospace; }
+    </style>
+  </head>
+  <body>
+
+    <div class="wrap">
+      <div class="header">
+        <div class="brand">Think Frameless Glassworks</div>span></div>div>
+      <h1>Ad Video <span>Uploader</span></h1>
+    <div class="sub">Drop video → get direct URL → paste to Claude</div>div>
+    </div>div>
+  
+  <div class="dropzone" id="dropzone">
+  <div class="drop-icon">
+  <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>svg>
+  </div>div>
+  <div class="drop-title">Drop your video here</div>div>
+  <div class="drop-sub">or <strong id="browse-trigger">browse to select</strong>strong></div>div>
+  <input type="file" id="file-input" accept="video/*">
+  </div>div>
+  
+  <div class="file-info" id="file-info">
+  <div class="file-icon">
+  <svg viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7z"/><polyline points="14 2 14 8 20 8"/><polygon points="10 11 8 13 10 15 14 13"/></svg>svg>
+  </div>div>
+  <div class="file-details">
+  <div class="file-name" id="file-name">—</div>div>
+  <div class="file-size" id="file-size">—</div>div>
+  </div>div>
+  <button class="file-remove" id="file-remove">
+  <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>svg>
+  </button>button>
+  </div>div>
+  
+  <button class="btn-upload" id="btn-upload">Upload & Get URL</button>button>
+  
+  <div class="progress-wrap" id="progress-wrap">
+  <div class="progress-label">Uploading… <span id="progress-pct">0%</span></div>div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div>div></div>div>
+  </div>div>
+  
+  <div class="error-msg" id="error-msg"></div>div>
+  
+  <div class="result" id="result">
+  <div class="result-label">Upload complete — copy this URL</div>div>
+  <div class="url-box" id="url-box">—</div>div>
+  <button class="btn-copy" id="btn-copy">Copy Direct URL</button>button>
+  <div class="result-note">Paste this into Claude with your ad brief. Link expires in 7 days.</div>div>
+  <button class="btn-reset" id="btn-reset">Upload another video</button>button>
+  </div>div>
+  </div>
+  
+  <div class="footer">Engineered. Not Eyeballed.</div>div>
+  
+  <script>
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('file-input');
+    const browseTrigger = document.getElementById('browse-trigger');
+    const fileInfo = document.getElementById('file-info');
+    const fileName = document.getElementById('file-name');
+    const fileSize = document.getElementById('file-size');
+    const fileRemove = document.getElementById('file-remove');
+    const btnUpload = document.getElementById('btn-upload');
+    const progressWrap = document.getElementById('progress-wrap');
+    const progressFill = document.getElementById('progress-fill');
+    const progressPct = document.getElementById('progress-pct');
+    const errorMsg = document.getElementById('error-msg');
+    const result = document.getElementById('result');
+    const urlBox = document.getElementById('url-box');
+    const btnCopy = document.getElementById('btn-copy');
+    const btnReset = document.getElementById('btn-reset');
+
+    let selectedFile = null;
+
+    function formatBytes(bytes) {
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function setFile(file) {
+      selectedFile = file;
+      fileName.textContent = file.name;
+      fileSize.textContent = formatBytes(file.size);
+      fileInfo.classList.add('show');
+      btnUpload.classList.add('show');
+      errorMsg.classList.remove('show');
+      result.classList.remove('show');
+    }
+
+    function clearFile() {
+      selectedFile = null;
+      fileInput.value = '';
+      fileInfo.classList.remove('show');
+      btnUpload.classList.remove('show');
+      errorMsg.classList.remove('show');
+    }
+
+    browseTrigger.addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
+    dropzone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => { if (fileInput.files[0]) setFile(fileInput.files[0]); });
+    dropzone.addEventListener('dragover', (o) => { o.preventDefault(); dropzone.classList.add('dragover'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', (o) => { o.preventDefault(); dropzone.classList.remove('dragover'); const f = o.dataTransfer.files[0]; if (f && f.type.startsWith('video/')) { setFile(f); } else { errorMsg.textContent = 'Please drop a video file.'; errorMsg.classList.add('show'); } });
+    fileRemove.addEventListener('click', clearFile);
+
+    btnUpload.addEventListener('click', async () => {
+      if (!selectedFile) return;
+      btnUpload.disabled = true;
+      btnUpload.textContent = 'Uploading…';
+      progressWrap.classList.add('show');
+      errorMsg.classList.remove('show');
+      result.classList.remove('show');
+      progressFill.style.width = '0%';
+      progressPct.textContent = '0%';
+
+      const binId = 'tfg-' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+      const safeName = selectedFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const uploadUrl = `https://0x0.st/${binId}/${encodeURIComponent(safeName)}`;
+
+      try {
+        await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', uploadUrl, true);
+          xhr.setRequestHeader('Content-Type', selectedFile.type || 'video/mp4');
+          xhr.setRequestHeader('filename', safeName);
+          xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+              const pct = Math.round((e.loaded / e.total) * 100);
+              progressFill.style.width = pct + '%';
+              progressPct.textContent = pct + '%';
+            }
+          });
+          xhr.onload = () => xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error('Http ' + xhr.status));
+          xhr.onerror = () => reject(new Error('Network error'));
+          xhr.send(selectedFile);
+        });
+        progressFill.style.width = '100%';
+        progressPct.textContent = '100%';
+        setTimeout(() => {
+          progressWrap.classList.remove('show');
+          urlBox.textContent = uploadUrl;
+          result.classList.add('show');
+          btnUpload.classList.remove('show');
+        }, 400);
+      } catch (err) {
+        progressWrap.classList.remove('show');
+        errorMsg.textContent = 'Upload failed: ' + err.message;
+        errorMsg.classList.add('show');
+        btnUpload.disabled = false;
+        btnUpload.textContent = 'Upload & Get URL';
+      }
+    });
+
+    btnCopy.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(urlBox.textContent);
+      } catch {
+        const ta = document.createElement('textarea');
+        ta.value = urlBox.textContent;
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      btnCopy.textContent = '✓ Copied!';
+      setTimeout(() => btnCopy.textContent = 'Copy Direct URL', 2500);
+    });
+
+    btnReset.addEventListener('click', () => {
+      clearFile();
+      result.classList.remove('show');
+      btnUpload.disabled = false;
+      btnUpload.textContent = 'Upload & Get URL';
+      progressWrap.classList.remove('show');
+    });
+  </script>
+  </body>
+</html>html>
+  </script></span></h1>
+  </body>
+  </style></title>
+  </head>
